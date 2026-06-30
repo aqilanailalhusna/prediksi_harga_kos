@@ -159,3 +159,14 @@ Meskipun nilai kesalahan rata-rata linear (MAE) sudah sangat rendah , nilai RMSE
 ### Sistem Bersifat Read-Only
 
 Berdasarkan keluhan umpan balik pengguna pada pengujian kualitatif, aplikasi KosIn saat ini masih terbatas sebagai instrumen edukasi transparansi harga anggaran sewa (*read-only*). Sistem belum menyediakan integrasi database atau API komunikasi dua arah yang dapat menghubungkan penyewa secara instan dengan kontak personal pemilik kos asli.
+
+
+---
+
+## Author Contribution
+
+| Nama | Kontribusi |
+| :--- | :--- |
+| Aqila Nailal Husna | Data Cleaning, Insight Extraction, Train Model, Evaluasi Model, Video Editor, Membuat PPT| 
+| Chelsea Olyviani Purnomo| Melakukan user testing, Analisa user testing, Penambahan visualisasi, Analisis hasil EDA, dan Menulis latar belakang, Video editor, Membuat PPT |
+| Nicholas Hubert Soegihono | Front end, Deployment, Membuat PPT, Check Latency |
