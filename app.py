@@ -5,16 +5,12 @@ import numpy as np
 import pickle
 from sklearn.metrics.pairwise import cosine_similarity
 
-# ==========================================
-# KONFIGURASI HALAMAN
-# ==========================================
 st.set_page_config(
     page_title="KosIn - Prediksi Harga Kos", 
     layout="wide", 
     initial_sidebar_state="collapsed"
 )
 
-# Inisialisasi State untuk navigasi
 if 'page' not in st.session_state:
     st.session_state.page = 1
 
@@ -24,7 +20,6 @@ def go_to_page_2():
 def go_to_page_1():
     st.session_state.page = 1
 
-# Fungsi Pembantu: Format Rupiah
 def format_rupiah(angka):
     return f"Rp {int(angka):,} ".replace(",", ".")
 
@@ -32,19 +27,15 @@ def merge_images_vertically(image_paths, target_width=600):
     images = []
     for path in image_paths:
         img = Image.open(path)
-        # Resize lebar ke target_width, tinggi menyesuaikan (proporsional)
         w_percent = (target_width / float(img.size[0]))
         h_size = int((float(img.size[1]) * float(w_percent)))
         img = img.resize((target_width, h_size), Image.LANCZOS)
         images.append(img)
     
-    # Hitung total tinggi
     total_height = sum(img.size[1] for img in images)
     
-    # Buat kanvas baru
     merged_image = Image.new('RGB', (target_width, total_height))
     
-    # Tempelkan gambar satu per satu
     y_offset = 0
     for img in images:
         merged_image.paste(img, (0, y_offset))
@@ -52,9 +43,7 @@ def merge_images_vertically(image_paths, target_width=600):
         
     return merged_image
 
-# ==========================================
-# LOAD MACHINE LEARNING MODEL & DATA
-# ==========================================
+
 @st.cache_resource
 def load_ml_assets():
     try:
@@ -84,18 +73,15 @@ def find_ohe_column(columns, prefix, value, df_source=None):
     """
     value_normalized = value.lower().replace(" ", "_")
 
-    # Cari kolom yang cocok
     for col in columns:
         if not col.startswith(prefix):
             continue
         col_suffix = col[len(prefix):]
         col_suffix_normalized = col_suffix.lower().replace(" ", "_")
         if col_suffix_normalized == value_normalized:
-            return col, False  # Ditemukan, bukan reference
+            return col, False  
 
-    # Tidak ditemukan — cek apakah ini reference category (di-drop saat OHE training)
-    # Logika: jika semua value lain dari kolom ini ADA di model_columns, 
-    # berarti value ini sengaja di-drop sebagai baseline/reference
+
     if df_source is not None:
         field_name = prefix.rstrip('_')
         if field_name in df_source.columns:
@@ -110,44 +96,40 @@ def find_ohe_column(columns, prefix, value, df_source=None):
                 if v.lower().replace(" ", "_") != value_normalized
             )
             if all_others_exist:
-                return None, True  # Reference category — all-zeros sudah benar
+                return None, True  
 
-    return None, False  # Tidak ditemukan sama sekali → tampilkan warning
+    return None, False  
 
 
 def get_top_5_recommendations(user_input_processed, df_cleaned, lokasi_filter=None, tipe_kos_filter=None):
     try:
         df_filtered = df_cleaned.copy()
 
-        # --- FILTER 1: Region ---
         if lokasi_filter and 'region' in df_filtered.columns:
             df_region = df_filtered[df_filtered['region'].str.lower() == lokasi_filter.lower()]
             if not df_region.empty:
                 df_filtered = df_region
 
-        # --- FILTER 2: Tipe Kos ---
         if tipe_kos_filter and 'tipe_kos' in df_filtered.columns:
             df_tipe = df_filtered[df_filtered['tipe_kos'].str.lower() == tipe_kos_filter.lower()]
             if not df_tipe.empty:
                 df_filtered = df_tipe
 
-        # Fallback: jika hasil filter kurang dari 5 data
         if df_filtered.empty or len(df_filtered) < 5:
             df_filtered = df_cleaned.copy()
 
-        # --- Kolom fasilitas (exclude OHE & non-fasilitas) ---
         ohe_cols = [col for col in user_input_processed.columns
                     if col.startswith('region_') or col.startswith('tipe_kos_')]
         fasilitas_cols = [col for col in user_input_processed.columns
                          if col != 'room_area' and col not in ohe_cols and col in df_filtered.columns]
 
-        # Hanya fasilitas yang user pilih (bernilai 1.0)
+
         fasilitas_user = [col for col in fasilitas_cols
                          if user_input_processed[col].iloc[0] == 1.0]
         if len(fasilitas_user) == 0:
             fasilitas_user = fasilitas_cols
 
-        # --- Similarity Fasilitas (Cosine) ---
+        
         if len(fasilitas_user) > 0:
             features_database = df_filtered[fasilitas_user].copy().fillna(0)
             user_features = user_input_processed[fasilitas_user].copy().fillna(0)
@@ -155,12 +137,12 @@ def get_top_5_recommendations(user_input_processed, df_cleaned, lokasi_filter=No
         else:
             sim_fasilitas = np.ones(len(df_filtered))
 
-        # --- Similarity Luas Kamar (Euclidean Distance inverse) ---
+        -
         luas_user = user_input_processed['room_area'].iloc[0]
         luas_db = df_filtered['room_area'].fillna(df_filtered['room_area'].median()).values
         sim_luas = 1 / (1 + np.abs(luas_db - luas_user))
 
-        # --- Kombinasi Bobot (70% fasilitas, 30% luas) ---
+        
         df_filtered['similarity'] = (sim_fasilitas * 0.7) + (sim_luas * 0.3)
         recommendations = df_filtered.sort_values(by='similarity', ascending=False).head(5)
 
@@ -171,9 +153,7 @@ def get_top_5_recommendations(user_input_processed, df_cleaned, lokasi_filter=No
         return None
 
 
-# ==========================================
-# GLOBAL CSS
-# ==========================================
+
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;} header {visibility: hidden;} footer {visibility: hidden;}
@@ -252,11 +232,8 @@ st.markdown("""
 
 
 
-# ==========================================
-# HALAMAN 1: FORM PENGISIAN
-# ==========================================
 if st.session_state.page == 1:
-    # Render Header Biasa untuk Halaman 1
+    
     st.markdown('<div class="custom-navbar"><h2>KosIn</h2></div>', unsafe_allow_html=True)
     st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
     left_col, right_col = st.columns([1.2, 1], gap="large")
@@ -278,7 +255,7 @@ if st.session_state.page == 1:
             
             st.markdown("<div style='font-size: 16px; font-weight: 800; color: #0f172a;'>Fasilitas Utama</div>", unsafe_allow_html=True)
                       
-            # --- Input Checkbox ---
+            
             inputs = {}
             st.markdown("<div class='section-title'>Fasilitas Kamar</div>", unsafe_allow_html=True)
             fk_col1, fk_col2, fk_col3 = st.columns(3)
@@ -351,21 +328,17 @@ if st.session_state.page == 1:
 
     with right_col:
         try:
-            # List path gambar Anda
+            
             list_gambar = ["src/image1.jpg", "src/image2.jpg", "src/image3.png"]
             
-            # Gabungkan menjadi 1 gambar
             final_image = merge_images_vertically(list_gambar, target_width=800)
             
-            # Tampilkan sebagai satu gambar utuh tanpa gap
             st.image(final_image, width='stretch')
             
         except Exception as e:
             st.error(f"Gagal memproses gambar: {str(e)}")
 
-# ==========================================
-# HALAMAN 2: HASIL PREDIKSI (TERHUBUNG KE ML)
-# ==========================================
+
 elif st.session_state.page == 2:
     
     st.markdown("""
@@ -425,7 +398,6 @@ elif st.session_state.page == 2:
         go_to_page_1()
         st.rerun()
 
-    # --- PROSES MACHINE LEARNING ---
     pred_price = 0
     top_5_recs = []
 
@@ -433,31 +405,21 @@ elif st.session_state.page == 2:
         try:
             input_data = pd.DataFrame(0.0, index=[0], columns=model_columns)
 
-            # --- Mapping Region (OHE) ---
-            # Cek apakah region yang dipilih adalah reference category atau bukan
+            
             lok = st.session_state.lokasi
             col_region, is_ref_region = find_ohe_column(model_columns, 'region_', lok, df_cleaned)
             if col_region:
                 input_data[col_region] = 1.0
             elif not is_ref_region:
-                # Benar-benar tidak ditemukan (bukan reference category) → warning
                 st.warning(f"⚠️ Kolom region untuk '{lok}' tidak ditemukan. Tersedia: {[c for c in model_columns if c.startswith('region_')]}")
-            # Jika is_ref_region=True → all-zeros sudah benar, tidak perlu apa-apa
 
-            # --- Mapping Tipe Kos (OHE) ---
-            # Kos Campur adalah reference category (di-drop saat training),
-            # sehingga tidak ada kolom tipe_kos_Kos Campur di model.
-            # All-zeros pada tipe_kos_ sudah merepresentasikan Kos Campur dengan benar.
             tipe = st.session_state.tipe_kos
             col_tipe, is_ref_tipe = find_ohe_column(model_columns, 'tipe_kos_', tipe, df_cleaned)
             if col_tipe:
                 input_data[col_tipe] = 1.0
             elif not is_ref_tipe:
-                # Benar-benar tidak ditemukan (bukan reference category) → warning
                 st.warning(f"⚠️ Kolom tipe_kos untuk '{tipe}' tidak ditemukan. Tersedia: {[c for c in model_columns if c.startswith('tipe_kos_')]}")
-            # Jika is_ref_tipe=True → all-zeros sudah benar, tidak perlu apa-apa
 
-            # --- Mapping Input Form (Checkbox & Slider) ---
             inp = st.session_state.inputs
             input_data['room_area'] = float(st.session_state.luas_kamar)
             
@@ -495,30 +457,24 @@ elif st.session_state.page == 2:
                 if col in input_data.columns:
                     input_data[col] = float(val)
 
-            # --- Prediksi Harga (model dalam log scale) ---
             pred_price_log = model.predict(input_data)[0]
             pred_price = np.expm1(pred_price_log)
 
-            # --- Top 5 Rekomendasi dengan filter region & tipe kos ---
             recs = get_top_5_recommendations(
                 input_data,
                 df_cleaned.copy(),
                 lokasi_filter=st.session_state.lokasi,
                 tipe_kos_filter=st.session_state.tipe_kos
             )
-            # 1. Jalankan prediksi model (tetap simpan hasil untuk referensi/log)
-            # ... (kode prediksi model Anda tetap di sini) ...
+            
             model_pred = model.predict(input_data)[0] 
             
-            # 2. Ambil DataFrame rekomendasi (panggil fungsi get_top_5_recommendations)
             recs_df = get_top_5_recommendations(input_data, df_cleaned.copy(), 
                                                 lokasi_filter=st.session_state.lokasi, 
                                                 tipe_kos_filter=st.session_state.tipe_kos)
             
             if recs_df is not None and not recs_df.empty:
-                # Gunakan rata-rata harga dari 5 kos teratas
                 pred_price = recs_df['price'].head(5).mean()
-                # Masukkan ke list untuk UI
                 for _, row in recs_df.iterrows():
                     nama_kos = row['room_name'] if 'room_name' in row else "Kos Tanpa Nama"
                     detail_location = f"{row['region']}, {row['location']}"
@@ -543,7 +499,6 @@ elif st.session_state.page == 2:
             {"nama": "Pondok Bunga", "lokasi": "Kuningan, Jakarta Selatan", "harga": format_rupiah(1650000)}
         ]
 
-    # --- BANNER HARGA PUSAT ---
     st.markdown(f"""
         <div style="background-color: #172033; padding: 50px 20px; border-radius: 16px; text-align: center; color: white; margin: 10px 0 50px 0; position: relative; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
             <div style="position: absolute; bottom: -50px; right: -50px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(245,158,11,0.06) 0%, transparent 70%); border-radius: 50%;"></div>
@@ -560,7 +515,7 @@ elif st.session_state.page == 2:
         </div>
     """, unsafe_allow_html=True)
 
-    # --- TOP 5 REKOMENDASI LISTING ---
+    
     col_rek1, col_rek2 = st.columns([4, 1])
     with col_rek1:
         st.markdown("<h4 style='color: #0f172a; font-weight: 800; font-size: 18px; margin-bottom: 20px;'>Top Rekomendasi Untukmu</h4>", unsafe_allow_html=True)
