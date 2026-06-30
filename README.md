@@ -140,10 +140,46 @@ Pengujian dilakukan terhadap 5 responden pengguna mahasiswa menggunakan skenario
 * **Usefulness:** Informasi tebakan harga dinilai sangat masuk akal dan relevan dengan realita pasar kos Jakarta karena tingkat kesalahan rata-rata model (MAE) berada di bawah batas toleransi anggaran psikologis penyewa (< Rp 250.000).
 
 
-* **Latency:** Proses kalkulasi komputasi dari penekanan tombol prediksi hingga memunculkan hasil output dirasakan berjalan sangat cepat (di bawah 1 detik).
+* **Latency:** Proses kalkulasi komputasi dari penekanan tombol prediksi hingga memunculkan hasil output dirasakan berjalan sangat cepat.
 
+---
 
+## Project Structure
 
+Berikut adalah tata letak direktori dan komponen utama dalam repositori proyek KosIn pada branch `feature_ui`:
+
+```text
+.
+├── .devcontainer/          
+│   └── devcontainer.json       
+├── data/                   # Tempat penyimpanan berkas dataset
+│   ├── Data_Indekos_Jabodetabek_Mamikos.csv
+│   ├── Data_Indekos_Jabodetabek_Mamikos_Clean.csv
+│   └── Data_Indekos_Jabodetabek_Mamikos_Regression.csv
+├── models/                 # Tempat penyimpanan berkas biner model terlatih
+│   ├── model_columns.pkl   # Serialisasi daftar urutan kolom fitur encoder
+│   └── model_kos.pkl       # Berkas utama model Random Forest Regressor (Pre-trained)
+├── notebooks/              # Lembar kerja eksperimen data science
+│   ├── EDA_Model.ipynb     # Notebook utama analisis data, EDA, dan pelatihan pipeline awal
+│   ├── X_test.npy          # Array data testing fitur hasil preprocessed
+│   ├── X_train.npy         # Array data training fitur hasil preprocessed
+│   ├── y_test.npy          # Array data testing target (Skala Logaritma)
+│   └── y_train.npy         # Array data training target (Skala Logaritma)
+├── src/                    # Asset gambar untuk frontend
+│   ├── background.jpg    
+│   └── image1.jpg
+|   └── image2. jpg
+|   └── image3.jpg     
+├── tugas_mlflow/           # Modul pemisahan pelacakan eksperimen MLOps
+│   ├── mlflow.db           # Backend database SQL murni hasil tracking eksperimen
+│   ├── mlflow_ses23-24.ipynb # Notebook manajemen siklus tuning hyperparameter MLflow
+│   └── mlruns/             # Folder penyimpanan artifacts dan metadata lokal MLflow
+├── .gitignore              # Berkas pengecualian push Git
+├── Dockerfile              # Konfigurasi containerization untuk deployment sistem
+├── README.md               # Dokumentasi utama repositori proyek
+├── app.py                  # Titik masuk utama (Entry point) aplikasi Streamlit
+└── requirements.txt        # Daftar dependensi library Python proyek
+```
 ---
 
 ## Limitations
