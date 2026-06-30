@@ -137,7 +137,7 @@ def get_top_5_recommendations(user_input_processed, df_cleaned, lokasi_filter=No
         else:
             sim_fasilitas = np.ones(len(df_filtered))
 
-        -
+        
         luas_user = user_input_processed['room_area'].iloc[0]
         luas_db = df_filtered['room_area'].fillna(df_filtered['room_area'].median()).values
         sim_luas = 1 / (1 + np.abs(luas_db - luas_user))
