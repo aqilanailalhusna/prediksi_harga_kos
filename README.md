@@ -12,7 +12,9 @@
 
 ## Results
 
-[cite_start]Selama tahap pengembangan model, kami melatih algoritma *baseline* sebagai *benchmark selection* [cite_start]Berikut adalah perbandingan metrik performa akhir antara model *baseline* dengan model terpilih
+Aplikasi dapat diakses melalui link : https://kosin-pred.streamlit.app/
+
+Selama tahap pengembangan model, kami melatih algoritma *baseline* sebagai *benchmark selection* Berikut adalah perbandingan metrik performa akhir antara model *baseline* dengan model terpilih
 
 | Model | $R^2$ Score | MAE | MSE | RMSE |
 | :--- | :--- | :--- | :--- | :--- |
