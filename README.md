@@ -14,8 +14,10 @@
 ## Results
 
 Aplikasi dapat diakses melalui link : https://kosin-pred.streamlit.app/
+
 Report dapat diakses melalui link : https://canva.link/2okipsfdhlmecg0
-Promotiional video dapat diakses melalui link: https://drive.google.com/drive/folders/1MaYo83JE7lGPdxy7_rS2SdD5dKkceC8a
+
+Promotional video dapat diakses melalui link: https://drive.google.com/drive/folders/1MaYo83JE7lGPdxy7_rS2SdD5dKkceC8a
 
 Selama tahap pengembangan model, kami melatih algoritma *baseline* sebagai *benchmark selection* Berikut adalah perbandingan metrik performa akhir antara model *baseline* dengan model terpilih
 
