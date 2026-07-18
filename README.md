@@ -9,6 +9,8 @@
 
 **Default Branch:** feature-ui 
 
+**Fitur Utama:** Menghitung estimasi harga sewa kos per bulan secara otomatis berdasarkan input lokasi, luas kamar, dan fasilitas yang diinginkan pengguna serta Menampilkan 5 daftar kos asli yang tersedia dengan harga aktual yang mendekati hasil prediksi atau wilayah yang dipilih.
+
 ---
 
 ## Results
@@ -108,6 +110,12 @@ streamlit run app.py
 ## Deployment
 
 Aplikasi dapat diakses melalui link : https://kosin-pred.streamlit.app/
+
+**Cara Menggunakan Aplikasi**
+* Akses link : https://kosin-pred.streamlit.app/
+* Setelah website terbuka, input lokasi, luas kamar, dan check fasilitas yang diinginkan
+* Klik button prediksi untuk mendapatkan harga hasil prediksi
+* Pengguna dapat melihat hasil prediksi kos dan 5 rekomendasi kos yang sesuai atau mendekati dengan yang diinginkan sesuai dengan wilayahnya.
 
 ---
 
